@@ -40,4 +40,8 @@ We welcome contributions to improve the documentation and the project. Please re
 
 If you encounter any issues or have any questions, please reach out to our support team at support@agentic.com.
 
+## Live Extension
+
+Check out the live extension at [Agentic Search](https://github.com/apps/agentic-search).
+
 Thank you for using the Agentic Github Copilot Extension!

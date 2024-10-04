@@ -10,9 +10,6 @@ The Agentic Github Copilot Extension is designed to enhance your development wor
 
 Check out the live extension at [Agentic Search](https://github.com/apps/agentic-search).
 
-Thank you for using the Agentic Github Copilot Extension!
-
-
 ## Key Features
 
 - **Autonomous Coding Assistance**: Provides intelligent code suggestions and completions.

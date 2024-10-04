@@ -6,6 +6,13 @@ Welcome to the Agentic Github Copilot Extension! This extension leverages the po
 
 The Agentic Github Copilot Extension is designed to enhance your development workflow by providing AI-powered code suggestions, intelligent automation, and streamlined project management directly within your GitHub repositories. Whether you're building a new project, maintaining existing code, or collaborating with a team, this extension offers tools to boost productivity and code quality.
 
+## Install Extension
+
+Check out the live extension at [Agentic Search](https://github.com/apps/agentic-search).
+
+Thank you for using the Agentic Github Copilot Extension!
+
+
 ## Key Features
 
 - **Autonomous Coding Assistance**: Provides intelligent code suggestions and completions.
@@ -39,9 +46,3 @@ We welcome contributions to improve the documentation and the project. Please re
 ## Support
 
 If you encounter any issues or have any questions, please reach out to our support team at support@agentic.com.
-
-## Live Extension
-
-Check out the live extension at [Agentic Search](https://github.com/apps/agentic-search).
-
-Thank you for using the Agentic Github Copilot Extension!

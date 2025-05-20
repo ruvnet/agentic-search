@@ -19,8 +19,8 @@ export class GithubCommandHandler implements CommandHandler {
    * @param context The VS Code extension context
    */
   constructor(context: vscode.ExtensionContext) {
-    this.githubClient = setupGitHubClient(context);
-    this.exaClient = setupExaClient(context); // Exa is used for GitHub repository searches
+    this.githubClient = setupGitHubClient(context); // Corrected: Added context argument
+    this.exaClient = setupExaClient(); 
     logger.info('GitHub command handler initialized');
   }
   
@@ -58,29 +58,11 @@ export class GithubCommandHandler implements CommandHandler {
         return messages;
       }
       
-      // GitHub searches are powered by Exa AI with a specific 'github' category
-      const requestBody = {
-        query: query,
-        type: "auto",
-        numResults: 20,
-        startPublishedDate: "2023-01-01",
-        category: "github",
-        livecrawl: "always",
-        contents: {
-          summary: {
-            query: "overview of github repo"
-          }
-        }
-      };
-      
-      logger.debug(`Sending request to Exa API for GitHub search`, requestBody);
+      logger.debug(`Sending request to Exa API for GitHub search`);
       
       try {
-        // Call Exa API with GitHub category filter
-        // In a real implementation, this would be properly implemented in the API client
-        // For now we'll use a simplified model
-        
-        const exaResults = await this.exaClient.search(query);
+        // Call Exa API using the specialized searchGitHub method
+        const exaResults = await this.exaClient.searchGitHub(query);
         
         // Process and format the results
         if (!exaResults.results || exaResults.results.length === 0) {
@@ -124,7 +106,7 @@ export class GithubCommandHandler implements CommandHandler {
         logger.error("Error fetching GitHub information using Exa AI API:", error);
         messages.push({
           role: "system",
-          content: "Unable to fetch GitHub information at the moment. Please try again later."
+          content: "Unable to fetch information at the moment. Please proceed with the current context."
         });
         return messages;
       }

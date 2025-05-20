@@ -1,6 +1,5 @@
-import * as vscode from 'vscode';
 import { ApiClient } from './index';
-import { getToken, storeToken } from '../auth/tokenStorage';
+import { ConfigManager, getConfigManager, ConfigKey } from '../config/ConfigManager'; // Import ConfigManager
 
 // Define types for Exa AI API
 export interface ExaSearchOptions {
@@ -43,20 +42,17 @@ export class ExaClient implements ApiClient {
   public isInitialized: boolean = false;
   public name: string = 'Exa AI';
   
-  private apiKey?: string;
-  private readonly apiKeyStorageKey = 'agenticCopilot.exa.apiKey';
+  private configManager: ConfigManager;
   private readonly baseUrl = 'https://api.exa.ai';
-  private context: vscode.ExtensionContext;
   
   /**
    * Initialize the Exa AI client with configuration
-   * @param context The extension context
-   * @param apiKey The Exa AI API key
+   * @param configManager The configuration manager instance
    */
-  constructor(context: vscode.ExtensionContext, apiKey?: string) {
-    this.context = context;
-    this.apiKey = apiKey;
-    this.isInitialized = !!apiKey;
+  constructor(configManager: ConfigManager) {
+    this.configManager = configManager;
+    // Check initial status
+    this.getApiKey().then(key => this.isInitialized = !!key);
   }
   
   /**
@@ -64,28 +60,9 @@ export class ExaClient implements ApiClient {
    * @returns The API key or undefined if not available
    */
   private async getApiKey(): Promise<string | undefined> {
-    if (this.apiKey) {
-      return this.apiKey;
-    }
-    
-    // Try to get from secure storage first
-    const storedKey = await getToken(this.context, this.apiKeyStorageKey);
-    if (storedKey) {
-      this.apiKey = storedKey;
-      this.isInitialized = true;
-      return storedKey;
-    }
-    
-    // Fall back to settings
-    const configKey = vscode.workspace.getConfiguration('agenticCopilot.exa').get<string>('apiKey');
-    if (configKey) {
-      // Store in secure storage for future use
-      await storeToken(this.context, this.apiKeyStorageKey, configKey);
-      this.apiKey = configKey;
-      this.isInitialized = true;
-    }
-    
-    return this.apiKey;
+    const key = await this.configManager.getSecure(ConfigKey.EXA_API_KEY);
+    this.isInitialized = !!key;
+    return key;
   }
   
   /**
@@ -93,18 +70,8 @@ export class ExaClient implements ApiClient {
    * @param apiKey The API key to set
    */
   public async setApiKey(apiKey: string): Promise<void> {
-    if (!apiKey) {
-      throw new Error('API key cannot be empty');
-    }
-    
-    try {
-      await storeToken(this.context, this.apiKeyStorageKey, apiKey);
-      this.apiKey = apiKey;
-      this.isInitialized = true;
-    } catch (error) {
-      console.error('Failed to store Exa AI API key:', error);
-      throw new Error(`Failed to store API key: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    await this.configManager.storeSecure(ConfigKey.EXA_API_KEY, apiKey);
+    this.isInitialized = true;
   }
   
   /**
@@ -214,23 +181,12 @@ let exaClient: ExaClient | undefined;
 
 /**
  * Setup the Exa AI client
- * @param context The extension context
  * @returns The initialized Exa AI client
  */
-export function setupExaClient(context: vscode.ExtensionContext): ExaClient {
-  // Get API key from settings
-  const apiKey = vscode.workspace.getConfiguration('agenticCopilot.exa').get<string>('apiKey');
-  
+export function setupExaClient(): ExaClient {
+  const configManager = getConfigManager();
   if (!exaClient) {
-    exaClient = new ExaClient(context, apiKey);
-    
-    // If API key is in settings and not yet stored securely, store it
-    if (apiKey) {
-      exaClient.setApiKey(apiKey).catch(error => {
-        console.error('Failed to store API key from settings:', error);
-      });
-    }
+    exaClient = new ExaClient(configManager);
   }
-  
   return exaClient;
 }

@@ -9,24 +9,35 @@ export interface ApiClient {
   name: string;
 }
 
+import { JinaClient, setupJinaClient } from './jina'; // Add this
+
+// Export API client interfaces for use in other modules
+export interface ApiClient {
+  isInitialized: boolean;
+  name: string;
+}
+
 // Export all clients for use in other modules
 export {
   OpenAIClient,
   GitHubClient,
-  ExaClient
+  ExaClient,
+  JinaClient      // Add this
 };
 
 // Export client setup functions
 export {
   setupOpenAIClient,
   setupGitHubClient,
-  setupExaClient
+  setupExaClient,
+  setupJinaClient  // Add this
 };
 
 // Client instances for singleton access
 let openaiClientInstance: OpenAIClient | undefined;
 let githubClientInstance: GitHubClient | undefined;
 let exaClientInstance: ExaClient | undefined;
+let jinaClientInstance: JinaClient | undefined;
 
 /**
  * Initialize all API clients required by the extension
@@ -34,13 +45,16 @@ let exaClientInstance: ExaClient | undefined;
  */
 export function setupApiClients(context: vscode.ExtensionContext): void {
   // Initialize the OpenAI client
-  openaiClientInstance = setupOpenAIClient(context);
+  openaiClientInstance = setupOpenAIClient();
   
   // Initialize the GitHub client
-  githubClientInstance = setupGitHubClient(context);
+  githubClientInstance = setupGitHubClient(context); // Corrected: Added context argument
   
   // Initialize the Exa AI client
-  exaClientInstance = setupExaClient(context);
+  exaClientInstance = setupExaClient();
+
+  // Initialize the Jina AI client
+  jinaClientInstance = setupJinaClient();
   
   console.log('API clients initialized');
 }
@@ -67,4 +81,12 @@ export function getGitHubClient(): GitHubClient | undefined {
  */
 export function getExaClient(): ExaClient | undefined {
   return exaClientInstance;
+}
+
+/**
+ * Get the Jina client instance
+ * @returns The Jina client instance
+ */
+export function getJinaClient(): JinaClient | undefined {
+  return jinaClientInstance;
 }

@@ -12,6 +12,8 @@ export enum ConfigKey {
   // Exa configuration
   EXA_API_KEY = 'agenticCopilot.exa.apiKey',
   
+  JINA_API_KEY = 'agenticCopilot.jina.apiKey', // Add this line
+
   // GitHub configuration
   GITHUB_PERSONAL_ACCESS_TOKEN = 'agenticCopilot.github.personalAccessToken',
   

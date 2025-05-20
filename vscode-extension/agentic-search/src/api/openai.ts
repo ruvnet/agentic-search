@@ -1,6 +1,5 @@
-import * as vscode from 'vscode';
 import { ApiClient } from './index';
-import { getToken, storeToken } from '../auth/tokenStorage';
+import { ConfigManager, getConfigManager, ConfigKey } from '../config/ConfigManager'; // Import ConfigManager
 
 // Define types for OpenAI API
 export interface ChatCompletionMessage {
@@ -46,20 +45,17 @@ export class OpenAIClient implements ApiClient {
   public isInitialized: boolean = false;
   public name: string = 'OpenAI';
   
-  private apiKey?: string;
-  private readonly apiKeyStorageKey = 'agenticCopilot.openai.apiKey';
+  private configManager: ConfigManager;
   private readonly baseUrl = 'https://api.openai.com/v1';
-  private context: vscode.ExtensionContext;
   
   /**
    * Initialize the OpenAI client with configuration
-   * @param context The extension context
-   * @param apiKey The OpenAI API key
+   * @param configManager The configuration manager instance
    */
-  constructor(context: vscode.ExtensionContext, apiKey?: string) {
-    this.context = context;
-    this.apiKey = apiKey;
-    this.isInitialized = !!apiKey;
+  constructor(configManager: ConfigManager) {
+    this.configManager = configManager;
+    // Check initial status
+    this.getApiKey().then(key => this.isInitialized = !!key);
   }
   
   /**
@@ -67,28 +63,9 @@ export class OpenAIClient implements ApiClient {
    * @returns The API key or undefined if not available
    */
   private async getApiKey(): Promise<string | undefined> {
-    if (this.apiKey) {
-      return this.apiKey;
-    }
-    
-    // Try to get from secure storage first
-    const storedKey = await getToken(this.context, this.apiKeyStorageKey);
-    if (storedKey) {
-      this.apiKey = storedKey;
-      this.isInitialized = true;
-      return storedKey;
-    }
-    
-    // Fall back to settings
-    const configKey = vscode.workspace.getConfiguration('agenticCopilot.openai').get<string>('apiKey');
-    if (configKey) {
-      // Store in secure storage for future use
-      await storeToken(this.context, this.apiKeyStorageKey, configKey);
-      this.apiKey = configKey;
-      this.isInitialized = true;
-    }
-    
-    return this.apiKey;
+    const key = await this.configManager.getSecure(ConfigKey.OPENAI_API_KEY);
+    this.isInitialized = !!key;
+    return key;
   }
   
   /**
@@ -96,18 +73,8 @@ export class OpenAIClient implements ApiClient {
    * @param apiKey The API key to set
    */
   public async setApiKey(apiKey: string): Promise<void> {
-    if (!apiKey) {
-      throw new Error('API key cannot be empty');
-    }
-    
-    try {
-      await storeToken(this.context, this.apiKeyStorageKey, apiKey);
-      this.apiKey = apiKey;
-      this.isInitialized = true;
-    } catch (error) {
-      console.error('Failed to store OpenAI API key:', error);
-      throw new Error(`Failed to store API key: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    await this.configManager.storeSecure(ConfigKey.OPENAI_API_KEY, apiKey);
+    this.isInitialized = true; 
   }
   
   /**
@@ -206,23 +173,12 @@ let openaiClient: OpenAIClient | undefined;
 
 /**
  * Setup the OpenAI client
- * @param context The extension context
  * @returns The initialized OpenAI client
  */
-export function setupOpenAIClient(context: vscode.ExtensionContext): OpenAIClient {
-  // Get API key from settings
-  const apiKey = vscode.workspace.getConfiguration('agenticCopilot.openai').get<string>('apiKey');
-  
+export function setupOpenAIClient(): OpenAIClient {
+  const configManager = getConfigManager();
   if (!openaiClient) {
-    openaiClient = new OpenAIClient(context, apiKey);
-    
-    // If API key is in settings and not yet stored securely, store it
-    if (apiKey) {
-      openaiClient.setApiKey(apiKey).catch(error => {
-        console.error('Failed to store API key from settings:', error);
-      });
-    }
+    openaiClient = new OpenAIClient(configManager);
   }
-  
   return openaiClient;
 }

@@ -17,7 +17,7 @@ export class ExaCommandHandler implements CommandHandler {
    * @param context The VS Code extension context
    */
   constructor(context: vscode.ExtensionContext) {
-    this.exaClient = setupExaClient(context);
+    this.exaClient = setupExaClient(); // Corrected: Removed context argument
     logger.info('Exa command handler initialized');
   }
   
@@ -54,26 +54,11 @@ export class ExaCommandHandler implements CommandHandler {
         return messages;
       }
       
-      // Make the request to Exa API
-      const requestBody = {
-        query: query,
-        type: "auto",
-        numResults: 25,
-        startPublishedDate: "2023-01-01",
-        category: "news",
-        livecrawl: "always",
-        contents: {
-          text: true,
-          summary: {}
-        }
-      };
-      
-      logger.debug(`Sending request to Exa API`, requestBody);
+      logger.debug(`Sending request to Exa API for news search`);
       
       try {
-        // Call Exa API (this would be implemented in the actual exaClient)
-        // For now, we'll use a simplified simulated response
-        const exaResults = await this.exaClient.search(query);
+        // Call Exa API using the specialized searchNews method
+        const exaResults = await this.exaClient.searchNews(query);
         
         // Process and format the results
         if (!exaResults.results || exaResults.results.length === 0) {
@@ -117,7 +102,7 @@ export class ExaCommandHandler implements CommandHandler {
         logger.error("Error fetching information using Exa AI API:", error);
         messages.push({
           role: "system",
-          content: "Unable to fetch information at the moment. Please try again later."
+          content: "Unable to fetch information at the moment. Please proceed with the current context."
         });
         return messages;
       }

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { CommandHandler } from './CommandProcessor';
 import { getLogger } from '../utils/logging';
-import { setupOpenAIClient, OpenAIClient } from '../api/openai';
+import { setupOpenAIClient, OpenAIClient, ChatCompletionMessage } from '../api/openai'; // Import ChatCompletionMessage
 
 // Logger instance for this handler
 const logger = getLogger('OpenAICommandHandler');
@@ -17,7 +17,7 @@ export class OpenAICommandHandler implements CommandHandler {
    * @param context The VS Code extension context
    */
   constructor(context: vscode.ExtensionContext) {
-    this.openaiClient = setupOpenAIClient(context);
+    this.openaiClient = setupOpenAIClient(); // Corrected: Removed context argument
     logger.info('OpenAI command handler initialized');
   }
   
@@ -62,11 +62,8 @@ export class OpenAICommandHandler implements CommandHandler {
         return messages;
       }
       
-      // In a real implementation, this would make an actual API call to OpenAI
-      // For now, we'll simulate a response
-      
       // Prepare messages for OpenAI
-      const openAIMessages = [
+      const openAIMessages: ChatCompletionMessage[] = [ // Explicitly typed
         {
           role: "system",
           content: "You are a knowledgeable assistant that provides clear and concise explanations without mentioning that you are an AI language model."
@@ -77,29 +74,25 @@ export class OpenAICommandHandler implements CommandHandler {
         }
       ];
       
-      // Simulate making request to OpenAI's Chat Completion API
-      logger.debug('Simulating OpenAI API request');
+      logger.debug('Making OpenAI API request');
       
       try {
-        // In a real implementation, we would call the actual OpenAI API here
-        // Something like:
-        // const chatCompletion = await this.openaiClient.createChatCompletion({
-        //   model: "o1-mini",
-        //   messages: openAIMessages,
-        //   temperature: 0.7,
-        //   max_tokens: 1500,
-        //   top_p: 1,
-        //   frequency_penalty: 0,
-        //   presence_penalty: 0,
-        // });
+        const chatCompletion = await this.openaiClient.createChatCompletion({
+          model: "o1-mini",
+          messages: openAIMessages,
+          temperature: 0.7,
+          max_tokens: 1500,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+        });
         
-        // For now, we'll simulate a response
-        const simulatedResponse = `This is a simulated response to your query about: ${openAiPrompt}. In a real implementation, this would be an actual response from the OpenAI API.`;
+        const assistantMessage = chatCompletion.choices[0].message.content.trim();
         
         // Add the assistant's reply to the messages
         messages.push({
-          role: "user",
-          content: simulatedResponse
+          role: "assistant",
+          content: assistantMessage
         });
         
         logger.info('Successfully processed OpenAI command');
@@ -109,7 +102,7 @@ export class OpenAICommandHandler implements CommandHandler {
         logger.error("Error calling OpenAI API:", error);
         messages.push({
           role: "system",
-          content: "Unable to process the OpenAI request at the moment. Please try again later."
+          content: "Unable to process the /openai command at the moment. Please try again later."
         });
         return messages;
       }

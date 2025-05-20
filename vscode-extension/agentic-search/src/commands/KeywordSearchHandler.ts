@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { CommandHandler } from './CommandProcessor';
 import { getLogger } from '../utils/logging';
+import { setupJinaClient, JinaClient } from '../api/jina'; // Import JinaClient and setupJinaClient
 
 // Logger instance for this handler
 const logger = getLogger('KeywordSearchHandler');
@@ -9,11 +10,14 @@ const logger = getLogger('KeywordSearchHandler');
  * Handler for processing default keyword searches
  */
 export class KeywordSearchHandler implements CommandHandler {
+  private jinaClient: JinaClient; // Declare jinaClient
+
   /**
    * Initialize the keyword search handler
    * @param context The VS Code extension context
    */
   constructor(context: vscode.ExtensionContext) {
+    this.jinaClient = setupJinaClient(); // Corrected: Removed context argument
     logger.info('Keyword search handler initialized');
   }
   
@@ -49,24 +53,25 @@ export class KeywordSearchHandler implements CommandHandler {
       
       logger.info(`Processing keyword search: "${keyword}"`);
       
-      // In a real implementation, this would make a request to a search API
-      // For example, the original implementation used Jina AI
-      // For now, we'll simulate a response
+      if (!this.jinaClient.isInitialized) {
+        logger.warn('Jina client not initialized. Check API key configuration.');
+        messages.push({
+          role: "system",
+          content: "Jina API key not configured. Please add it in the extension settings."
+        });
+        return messages;
+      }
       
       try {
-        // Simulate making a search request
-        logger.debug(`Simulating search request for: ${keyword}`);
-        
-        // In a real implementation, we would call an actual search API
-        // For example:
-        // const requestUrl = `https://s.jina.ai/${encodeURIComponent(keyword)}`;
-        // const response = await fetch(requestUrl, {...});
-        // const searchData = await response.text();
-        
-        // For now, we'll simulate search results
-        const simulatedSearchData = `This is simulated search data for the keyword: ${keyword}. In a real implementation, this would be actual search results from an API like Jina AI.`;
-        
-        // Add system and user messages to guide the response
+        logger.debug(`Making Jina API request for: ${keyword}`);
+        const searchData = await this.jinaClient.search(keyword);
+
+        const maxTokens = 8000;
+        let truncatedSearchData = searchData;
+        if (searchData.length > maxTokens) {
+          truncatedSearchData = searchData.substring(0, maxTokens) + "... [truncated]";
+        }
+
         messages.push({
           role: "system",
           content: `You have information about the keyword: '${keyword}'. Please summarize this information clearly, and ensure it is helpful and informative. Be complete, verbose with citations and references. Use markdown for formatting.`
@@ -74,17 +79,17 @@ export class KeywordSearchHandler implements CommandHandler {
         
         messages.push({
           role: "user",
-          content: `Here is some information about '${keyword}': ${simulatedSearchData}`
+          content: `Here is some information about '${keyword}': ${truncatedSearchData}`
         });
         
         logger.info(`Successfully processed keyword search for '${keyword}'`);
         return messages;
-        
+
       } catch (error) {
-        logger.error("Error fetching search results:", error);
+        logger.error("Error fetching search results via Jina:", error);
         messages.push({
           role: "system",
-          content: "Unable to fetch search information at the moment. Please try again later."
+          content: "Unable to fetch information at the moment. Please proceed with the current context." // Aligned error message
         });
         return messages;
       }

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { CommandProcessor } from '../commands/CommandProcessor';
 import { getLogger } from '../utils/logging';
+import { GitHubClient, setupGitHubClient } from '../api/github'; // Add this
 
 // Logger instance for this plugin
 const logger = getLogger('AgenticCopilotPlugin');
@@ -11,6 +12,7 @@ const logger = getLogger('AgenticCopilotPlugin');
  */
 export class AgenticCopilotPlugin {
   private commandProcessor: CommandProcessor;
+  private githubClient: GitHubClient; // Add this
   
   /**
    * Initialize the plugin with all required components
@@ -19,6 +21,7 @@ export class AgenticCopilotPlugin {
   constructor(context: vscode.ExtensionContext) {
     // Initialize the command processor
     this.commandProcessor = new CommandProcessor(context);
+    this.githubClient = setupGitHubClient(context); // Add this
     logger.info('Agentic Copilot plugin initialized');
   }
   
@@ -163,41 +166,51 @@ Please format your response using markdown for readability.
    */
   private async extractUserInfo(message: any): Promise<any> {
     try {
-      // Get the GitHub token from the message
-      const token = message.token || '';
-      
-      // If we have a token, try to get user info
-      if (token && token.length > 0) {
+      // The githubClient is initialized to use vscode.authentication for tokens.
+      // The message.token is also available if needed, but GitHubClient handles its own token acquisition.
+      const ghTokenFromMessage = message.token; // This is the token Copilot Chat provides
+
+      if (ghTokenFromMessage && this.githubClient) { // Check if token exists and client is available
+        logger.info('Attempting to fetch GitHub user information using GitHubClient.');
         try {
-          // In a production implementation, we would use the Octokit client
-          // to fetch user information using the GitHub API
-          
-          // For now, simulate a call to get user info
-          logger.info('Using GitHub token to fetch user information');
-          
-          // Mock implementation - in production, this would be a real API call
-          return {
-            login: 'github-user',
-            name: 'GitHub User',
-            authenticated: true
-          };
+          // GitHubClient's getAuthToken method (called by getAuthenticatedUser)
+          // will try to get a session. If Copilot Chat provides a token,
+          // it implies a session is active.
+          const authenticatedUser = await this.githubClient.getAuthenticatedUser();
+          if (authenticatedUser && authenticatedUser.login) {
+            logger.info(`Successfully fetched GitHub user: @${authenticatedUser.login}`);
+            return {
+              login: authenticatedUser.login,
+              name: authenticatedUser.name || authenticatedUser.login,
+              authenticated: true,
+              token: ghTokenFromMessage // We can still pass along the original token
+            };
+          } else {
+            logger.warn('GitHubClient.getAuthenticatedUser() did not return a user with a login.');
+          }
         } catch (err) {
-          logger.error('Error fetching GitHub user info:', err);
-          // Fall back to default user info
+          logger.error('Error fetching GitHub user info via GitHubClient:', err);
+          // Fall through to default unauthenticated user
         }
+      } else {
+        if (!ghTokenFromMessage) logger.warn('No GitHub token found in the incoming message from Copilot Chat.');
+        if (!this.githubClient) logger.error('GitHubClient not available in AgenticCopilotPlugin.');
       }
       
-      // Default user info when no token or error occurs
+      // Default user info when no token, client error, or API call fails
+      logger.info('Returning default unauthenticated user info.');
       return {
         login: 'user',
-        name: 'GitHub User',
-        authenticated: false
+        name: 'User', // Changed from 'GitHub User' to generic 'User'
+        authenticated: false,
+        token: ghTokenFromMessage
       };
     } catch (error) {
-      logger.error('Error extracting user info:', error);
+      logger.error('Error in extractUserInfo:', error);
       return {
         login: 'user',
-        name: 'GitHub User'
+        name: 'User',
+        authenticated: false
       };
     }
   }

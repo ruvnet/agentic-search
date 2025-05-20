@@ -3,6 +3,7 @@ import { setupAuthentication } from './auth/index';
 import { registerCommands } from './activation/registerCommands';
 import { registerPlugin } from './activation/registerPlugin';
 import { setupLogging, getLogger } from './utils/logging';
+import { initializeConfigManager } from './config/ConfigManager'; // Add this line
 
 // Set up logging system
 let logger: any;
@@ -16,8 +17,9 @@ let logger: any;
  */
 export async function activate(context: vscode.ExtensionContext) {
   try {
+    initializeConfigManager(context); // Add this line early
     // Initialize logging system
-    logger = setupLogging(context);
+    logger = setupLogging(context); // Assuming logger setup might use ConfigManager
     logger.info('Activating Agentic Search extension');
     
     // Setup authentication providers (GitHub, etc.)

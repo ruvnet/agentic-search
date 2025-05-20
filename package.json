@@ -1,24 +1,29 @@
 {
-    "name": "agentic-copilot-extension",
-    "private": "true",
-    "description": "A basic example of a Copilot Extension",
-    "scripts": {
-      "start": "node index.js",
-      "dev": "node --watch index.js"
-    },
-    "type": "module",
-    "dependencies": {
-      "@octokit/core": "^6.1.2",
-      "@supabase/supabase-js": "^2.45.4",
-      "dotenv": "^16.4.5",
-      "express": "^4.21.0",
-      "node-fetch": "^3.3.2",
-      "openai": "^4.67.1"
-    },
-    "version": "1.0.0",
-    "main": "index.js",
-    "keywords": [],
-    "author": "",
-    "license": "ISC"
-  }
-  
+  "name": "agentic-copilot-extension",
+  "private": "true",
+  "description": "A basic example of a Copilot Extension",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.js",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.js --watch"
+  },
+  "type": "module",
+  "dependencies": {
+    "@octokit/core": "^6.1.2",
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.67.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0"
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

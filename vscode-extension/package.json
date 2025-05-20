@@ -1,0 +1,97 @@
+{
+  "name": "agentic-copilot-vscode",
+  "displayName": "Agentic Copilot",
+  "description": "Copilot plugin for Agentic Search with enhanced capabilities for search, GitHub integration, and more",
+  "version": "0.1.0",
+  "publisher": "agentic-search",
+  "engines": {
+    "vscode": "^1.93.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:agenticCopilot.start"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agenticCopilot.start",
+        "title": "Start Agentic Copilot"
+      }
+    ],
+    "copilotPlugins": [
+      {
+        "id": "agentic-co-pilot",
+        "displayName": "Agentic Copilot",
+        "description": "Enhanced search capabilities with Exa, GitHub integration, and OpenAI access",
+        "url": "http://localhost:3000",
+        "scopes": [
+          "chat"
+        ],
+        "auth": {
+          "type": "gitHubToken"
+        }
+      }
+    ],
+    "configuration": {
+      "title": "Agentic Copilot",
+      "properties": {
+        "agenticCopilot.openai.apiKey": {
+          "type": "string",
+          "description": "OpenAI API key",
+          "scope": "application"
+        },
+        "agenticCopilot.exa.apiKey": {
+          "type": "string",
+          "description": "Exa AI API key",
+          "scope": "application"
+        },
+        "agenticCopilot.api.timeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "Timeout for API requests in milliseconds"
+        },
+        "agenticCopilot.formatting.codeBlocks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable syntax highlighting in code blocks"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.93.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/test-electron": "^2.3.4",
+    "eslint": "^8.39.0",
+    "glob": "^10.2.2",
+    "mocha": "^10.2.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.81.0",
+    "webpack-cli": "^5.0.2"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.0.3",
+    "openai": "^4.0.0",
+    "octokit": "^3.0.0"
+  }
+}

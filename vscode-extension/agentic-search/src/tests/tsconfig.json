@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json", // Extend the main tsconfig
+  "compilerOptions": {
+    "outDir": "../../out/tests",    // Separate output directory for these tests if needed
+    "rootDir": "..",                 // Root is src/
+    "types": ["vscode", "node", "jest"], // Prioritize Jest types here
+    "lib": ["esnext", "dom"]         // Ensure "dom" is present for Jest
+  },
+  "include": [
+    "./**/*.ts" // Include all .ts files in the current directory (src/tests/)
+  ],
+  "exclude": [
+    "../test" // Exclude the Mocha tests in src/test/
+  ]
+}

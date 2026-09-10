@@ -1,45 +1,39 @@
-# Agentic Github Copilot Extension
+![Agentic Search](docs/assets/header.svg)
+# Agentic Search v2
 
-Welcome to the Agentic Github Copilot Extension! This extension leverages the power of agentic systems to enhance your coding experience. Agentic systems are intelligent entities that can perform tasks autonomously, making your development process more efficient and productive.
+Search your own documents locally and return traceable source hashes. No API key or remote model is required.
 
-## Overview
+## Capabilities
 
-The Agentic Github Copilot Extension is designed to enhance your development workflow by providing AI-powered code suggestions, intelligent automation, and streamlined project management directly within your GitHub repositories. Whether you're building a new project, maintaining existing code, or collaborating with a team, this extension offers tools to boost productivity and code quality.
+| Capability | Behavior |
+| :--- | :--- |
+| BM25 ranking | Deterministic lexical ranking, no semantic model claim |
+| Citations | SHA256 of original source text |
+| HTTP | Loopback, bearer token, origin rejection, request limits |
 
-## Install Extension
+| CLI | status, test, benchmark, mcp |
+| MCP | Project status, domain tool, policy resource |
+| MetaHarness | Generated repo maintainer profiles and host integrations |
 
-Check out the live extension at [Agentic Search](https://github.com/apps/agentic-search).
+## Install and use
 
-## Key Features
+Node 22 or newer:
 
-- **Autonomous Coding Assistance**: Provides intelligent code suggestions and completions.
-- **Context-Aware Suggestions**: Understands the context of your code to provide relevant suggestions.
-- **Seamless Integration**: Integrates smoothly with your existing development environment.
-- **Customizable**: Allows customization to fit your specific coding needs.
-- **Advanced Error Detection**: Identifies and suggests fixes for potential errors in your code.
-- **AI-Powered Code Generation**: Generate code snippets using advanced AI algorithms.
-- **Multi-Language Support**: Supports multiple programming languages for versatile coding.
-- **Real-Time Collaboration**: Collaborate with other developers in real-time.
-- **Deep Learning Integration**: Leverage deep learning models for more accurate suggestions.
-- **Automated Testing**: Automatically test your code to ensure it meets quality standards.
+```sh
+npm ci --ignore-scripts
+node src/cli.js search "signed federation"
+SEARCH_TOKEN=$(openssl rand -hex 32) npm start
+npm test
+npm run benchmark
+npm run mcp
+```
 
-## Documentation
+MCP uses stdio. Configure the host to run `node src/cli.js mcp` with this repository as its working directory. Only the operator configures corpus paths or origin permissions. Tool callers cannot execute shell commands or supply local paths. Returned content is untrusted data.
 
-The documentation for the Agentic Github Copilot Extension is organized into several sections to help you understand and utilize the extension effectively. You can find detailed information in the following files:
+## Validation and release
 
-- [Architecture](docs/architecture.md): Detailed information about the architecture of the project, including diagrams and explanations of the main components.
-- [Intents](docs/intents.md): Detailed information about the intents and goals of the project, including examples of use cases and scenarios.
-- [Search](docs/search.md): Detailed information about the search functionality of the project, including explanations of the search algorithms and techniques used.
-- [Advanced](docs/advanced.md): Detailed information about advanced features and customization options, including examples of advanced usage and configuration.
+CI runs regression tests, real SDK stdio tests and dependency audit. Benchmark output reports fixture performance only. Release artifacts require the same checks. See [architecture and security](docs/adr/0001-supported-v2.md). Historical functionality is described in [the archived README](docs/historical-readme.md); it is outside the supported v2 surface.
 
-## Getting Started
+## Related projects
 
-To get started with the Agentic Github Copilot Extension, please refer to the [README.md](README.md) file in the root directory of the repository.
-
-## Contributing
-
-We welcome contributions to improve the documentation and the project. Please refer to the [Contributing Guide](CONTRIBUTING.md) for more information on how to contribute.
-
-## Support
-
-If you encounter any issues or have any questions, please reach out to our support team at support@agentic.com.
+[RuFlo](https://github.com/ruvnet/ruflo) coordinates agents. [MetaHarness](https://github.com/ruvnet/metaharness) supplies host profiles and evaluations. [Autogenous](https://github.com/ruvnet/autogenous) provides governed improvement primitives. [RuVector](https://github.com/ruvnet/ruvector) supplies vector search primitives. [Federation](https://x.ruv.io/mcp) is a separate authenticated coordination service. No federation enrollment or publishing is performed by this package.

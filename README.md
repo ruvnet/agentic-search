@@ -37,3 +37,9 @@ CI runs regression tests, real SDK stdio tests and dependency audit. Benchmark o
 ## Related projects
 
 [RuFlo](https://github.com/ruvnet/ruflo) coordinates agents. [MetaHarness](https://github.com/ruvnet/metaharness) supplies host profiles and evaluations. [Autogenous](https://github.com/ruvnet/autogenous) provides governed improvement primitives. [RuVector](https://github.com/ruvnet/ruvector) supplies vector search primitives. [Federation](https://x.ruv.io/mcp) is a separate authenticated coordination service. No federation enrollment or publishing is performed by this package.
+
+## Optional RuVector mode
+
+`SEARCH_MODE=hybrid node src/cli.js search "signed federation"` uses pinned native RuVector, 256 dimensional lexical feature hashes and reciprocal rank fusion. These are lexical features, not learned embeddings. SHA256 citations are preserved. The native cosine results are checked against an independent scalar oracle. On the three document fixture, hybrid p95 was 0.508 ms versus BM25 0.0039 ms, so BM25 remains the default. The private temporary native index is removed on normal exit; abrupt process termination can leave a private temporary directory.
+
+MCP `project_validate` and `project_benchmark` require operator environment `RUV_ALLOW_VALIDATION=1`. They launch only fixed commands, with a single process slot, 60 second deadline and 128 KiB output cap. Receipts are unsigned content hashes, not trusted attestations.
